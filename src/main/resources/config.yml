@@ -1,0 +1,9 @@
+# 间隔（单位：秒）
+# 太高会导致服务器卡顿
+SpawnInterval: 600
+# 物品数量
+# 太高会导致服务器卡顿
+SpawnNumber: 1
+# 每个区块中最大可以出现几只刷物品的鸡
+# 超过此数量的鸡将停止刷物品
+MaxChickensPerChunk: 8
