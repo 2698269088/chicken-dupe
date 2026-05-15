@@ -1,3 +1,6 @@
+# 是否启用鸡的定时产出功能
+# true=启用, false=禁用
+EnableChickenSpawn: true
 # 间隔（单位：秒）
 # 太高会导致服务器卡顿
 SpawnInterval: 600
@@ -7,3 +10,10 @@ SpawnNumber: 1
 # 每个区块中最大可以出现几只刷物品的鸡
 # 超过此数量的鸡将停止刷物品
 MaxChickensPerChunk: 8
+
+# 是否启用带箱子生物的击杀倍数掉落功能
+# true=启用, false=禁用
+EnableDropMultiplier: true
+# 击杀带有仓库存储的生物时的掉落倍数
+# 默认3倍，即掉落原物品数量的3倍
+DropMultiplier: 3

@@ -26,25 +26,41 @@ public final class PigeonChickenDupe extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        // 注册事件监听器
-        getServer().getPluginManager().registerEvents(this, this);
-
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
 
         // 初始化数据管理器
         dataManager = new DataManager(getDataFolder(), getLogger());
 
-        int intervalSeconds = getConfig().getInt("SpawnInterval");
-        long intervalTicks = Math.max(1L, intervalSeconds * 20L); // 确保至少 1 tick
+        // 注册事件监听器
+        getServer().getPluginManager().registerEvents(this, this);
+        
+        // 根据配置决定是否注册掉落倍数监听器
+        boolean enableDropMultiplier = getConfig().getBoolean("EnableDropMultiplier", true);
+        if (enableDropMultiplier) {
+            getServer().getPluginManager().registerEvents(new DropMultiplierListener(this), this);
+            getLogger().info("击杀倍数掉落功能已启用");
+        } else {
+            getLogger().info("击杀倍数掉落功能已禁用");
+        }
 
-        // 使用 Folia 兼容的调度器（也兼容 Paper）
-        spawnTask = getServer().getGlobalRegionScheduler().runAtFixedRate(
-            this,
-            (task) -> spawnItemsForChickens(),
-            1L,  // Folia 要求初始延迟至少为 1 tick
-            intervalTicks
-        );
+        // 根据配置决定是否启动鸡的定时产出任务
+        boolean enableChickenSpawn = getConfig().getBoolean("EnableChickenSpawn", true);
+        if (enableChickenSpawn) {
+            int intervalSeconds = getConfig().getInt("SpawnInterval");
+            long intervalTicks = Math.max(1L, intervalSeconds * 20L); // 确保至少 1 tick
+
+            // 使用 Folia 兼容的调度器（也兼容 Paper）
+            spawnTask = getServer().getGlobalRegionScheduler().runAtFixedRate(
+                this,
+                (task) -> spawnItemsForChickens(),
+                1L,  // Folia 要求初始延迟至少为 1 tick
+                intervalTicks
+            );
+            getLogger().info("鸡的定时产出功能已启用");
+        } else {
+            getLogger().info("鸡的定时产出功能已禁用");
+        }
 
         // 输出插件加载成功信息
         getLogger().info("PigeonChickenDupe");
@@ -101,21 +117,13 @@ public final class PigeonChickenDupe extends JavaPlugin implements Listener {
             }
         }
     }
-    // 实体死亡事件
-    @EventHandler
-    public void onEntityDeath(EntityDeathEvent event) {
-        Entity entity = event.getEntity();
-        if (entity instanceof Chicken) {
-            UUID chickenUuid = entity.getUniqueId();
-            
-            // 使用 DataManager 移除数据（线程安全）
-            dataManager.removeChickenItem(chickenUuid);
-            
-            // 异步保存数据到文件
-            dataManager.saveDataAsync(null);
-        }
-    }
+
     private void spawnItemsForChickens() {
+        // 再次检查功能是否启用
+        if (!getConfig().getBoolean("EnableChickenSpawn", true)) {
+            return;
+        }
+        
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
         int SpawnNumber = getConfig().getInt("SpawnNumber");
